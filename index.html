@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DKS - Premium Gaming & Earning Platform</title>
+<style>
+:root {
+--bg-primary: #0f172a;
+--bg-secondary: #1e293b;
+--bg-card: #334155;
+--accent: #38bdf8;
+--accent-hover: #0284c7;
+--success: #22c55e;
+--danger: #ef4444;
+--warning: #f59e0b;
+--text-main: #f8fafc;
+--text-muted: #94a3b8;
+--border: #475569;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background: var(--bg-primary); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+
+.container { width: 100%; max-width: 480px; background: var(--bg-secondary); min-height: 100vh; box-shadow: 0 0 30px rgba(0,0,0,0.7); display: flex; flex-direction: column; position: relative; overflow-x: hidden; }
+
+header { background: var(--bg-primary); padding: 15px 20px; text-align: center; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+header h1 { color: var(--accent); font-size: 22px; font-weight: bold; letter-spacing: 1px; }
+
+.content { padding: 20px; flex: 1; overflow-y: auto; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.form-group input, .form-group select { width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-main); border-radius: 8px; font-size: 15px; outline: none; transition: 0.2s; }
+.form-group input:focus, .form-group select:focus { border-color: var(--accent); box-shadow: 0 0 5px rgba(56, 189, 248, 0.3); }
+
+.btn { width: 100%; padding: 12px; background: var(--accent-hover); border: none; color: #fff; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+.btn:hover { background: var(--accent); color: #0f172a; }
+
+.alert { padding: 12px; background: var(--danger); color: white; border-radius: 8px; margin-bottom: 15px; text-align: center; font-size: 14px; font-weight: 500; }
+.success { background: var(--success); }
+
+.hidden { display: none !important; }
+
+.nav-tabs { display: flex; justify-content: space-around; background: var(--bg-primary); padding: 10px; border-top: 1px solid var(--border); position: sticky; bottom: 0; width: 100%; }
+.nav-tab { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s; }
+.nav-tab.active, .nav-tab:hover { color: var(--accent); }
+
+.game-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
+.game-card { background: var(--bg-card); padding: 20px 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border); transition: 0.3s; }
+.game-card:hover { transform: translateY(-3px); border-color: var(--accent); background: #3b4d66; }
+.game-card h3 { font-size: 16px; margin-bottom: 5px; color: var(--text-main); }
+.game-card p { font-size: 12px; color: var(--text-muted); }
+
+.wallet-box { background: var(--bg-card); padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+.wallet-box h2 { color: var(--success); font-size: 24px; margin-top: 5px; }
+
+.toggle-link { text-align: center; margin-top: 15px; color: var(--accent); cursor: pointer; font-size: 14px; font-weight: 500; }
+.toggle-link:hover { text-decoration: underline; }
+
+.admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+.admin-table th, .admin-table td { border: 1px solid var(--border); padding: 8px; text-align: left; }
+.admin-table th { background: var(--bg-primary); color: var(--accent); }
+.stat-card { background: var(--bg-card); padding: 15px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+<header>
+<h1>DKS Platform</h1>
+<span id="header-user-badge" style="font-size: 12px; color: var(--text-muted);" class="hidden">ইউজার</span>
+</header>
+
+<div id="auth-section" class="content">
+<div id="msg" class="alert hidden"></div>
+
+<div id="login-form">
+<h2 style="margin-bottom: 15px; color: var(--accent);">লগইন করুন</h2>
+<div class="form-group">
+<label>মোবাইল নাম্বার বা জিমেইল</label>
+<input type="text" id="login-user" placeholder="নাম্বার বা জিমেইল দিন">
+</div>
+<div class="form-group">
+<label>লগইন পাসওয়ার্ড</label>
+<input type="password" id="login-pass" placeholder="পাসওয়ার্ড দিন">
+</div>
+<button class="btn" onclick="login()">লগইন</button>
+<div class="toggle-link" onclick="toggleAuth('signup')">একাউন্ট নেই? সাইন আপ করুন</div>
+</div>
+
+<div id="signup-form" class="hidden">
+<h2 style="margin-bottom: 15px; color: var(--accent);">নতুন একাউন্ট তৈরি করুন</h2>
+<div class="form-group">
+<label>বিডি মোবাইল নাম্বার</label>
+<input type="text" id="su-mobile" placeholder="017xxxxxxxx">
+</div>
+<div class="form-group">
+<label>জিমেইল এড্রেস</label>
+<input type="email" id="su-email" placeholder="example@gmail.com">
+</div>
+<div class="form-group">
+<label>লগইন পাসওয়ার্ড</label>
+<input type="password" id="su-pass" placeholder="লগইন পাসওয়ার্ড">
+</div>
+<div class="form-group">
+<label>টাকা উত্তোলন (Withdraw) পাসওয়ার্ড</label>
+<input type="password" id="su-w-pass" placeholder="৪ বা ৬ ডিজিটের পিন">
+</div>
+<div class="form-group">
+<label>বিকাশ পারসোনাল নাম্বার</label>
+<input type="text" id="su-bkash" placeholder="017xxxxxxxx">
+</div>
+<div class="form-group">
+<label>নগদ পারসোনাল নাম্বার</label>
+<input type="text" id="su-nagad" placeholder="018xxxxxxxx">
+</div>
+<button class="btn" onclick="signup()">সাইন আপ সম্পন্ন করুন</button>
+<div class="toggle-link" onclick="toggleAuth('login')">ইতিমধ্যে একাউন্ট আছে? লগইন করুন</div>
+</div>
+</div>
+
+<div id="dashboard-section" class="content hidden">
+<div class="wallet-box">
+<div>
+<p style="font-size: 13px; color: var(--text-muted);">মেইন ব্যালেন্স</p>
+<h2 id="user-balance">৳ 0.00</h2>
+</div>
+<div>
+<button class="btn" style="padding: 8px 16px; margin: 0;" onclick="showTab('deposit')">ডিপোজিট</button>
+</div>
+</div>
+
+<div id="tab-games" class="tab-content">
+<h3 style="color: var(--accent);">জনপ্রিয় গেমসমূহ</h3>
+<div class="game-grid">
+<div class="game-card" onclick="playGame('Color Prediction')">
+<h3>Color Prediction</h3>
+<p>রং অনুমান করুন ও দ্বিগুণ জিতুন</p>
+</div>
+<div class="game-card" onclick="playGame('Head & Tail')">
+<h3>Head & Tail</h3>
+<p>কয়েন ফ্লিপ গেম</p>
+</div>
+<div class="game-card" onclick="playGame('Lucky Spin')">
+<h3>Lucky Spin</h3>
+<p>চাকা ঘুরিয়ে ভাগ্য পরীক্ষা</p>
+</div>
+<div class="game-card" onclick="playGame('Dice Rolling')">
+<h3>Dice Rolling</h3>
+<p>ডাইস রোল করে জিতুন</p>
+</div>
+</div>
+</div>
+
+<div id="tab-deposit" class="tab-content hidden">
+<h3 style="color: var(--accent); margin-bottom: 10px;">টাকা ডিপোজিট করুন</h3>
+<div style="background: var(--bg-card); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; border: 1px solid var(--border);">
+<p style="margin-bottom: 5px;">বিকাশ (Personal): <b id="admin-bkash-num" style="color: var(--accent);">01700000000</b></p>
+<p>নগদ (Personal): <b id="admin-nagad-num" style="color: var(--accent);">01800000000</b></p>
+</div>
+<div class="form-group">
+<label>ডিপোজিট মাধ্যম</label>
+<select id="dep-method" onchange="updateDepositNumber()">
+<option value="bkash">Bkash</option>
+<option value="nagad">Nagad</option>
+</select>
+</div>
+<div class="form-group">
+<label>পরিমাণ (২০০, ৩০০, ৫০০, ১০০০ বা আপনার পছন্দমতো)</label>
+<input type="number" id="dep-amount" placeholder="যেমন: ৫০০">
+</div>
+<div class="form-group">
+<label>যে নাম্বার থেকে টাকা পাঠিয়েছেন এবং TrxID</label>
+<input type="text" id="dep-trx" placeholder="নাম্বার ও TrxID দিন">
+</div>
+<button class="btn" onclick="submitDeposit()">ডিপোজিট নিশ্চিত করুন</button>
+</div>
+
+<div id="tab-withdraw" class="tab-content hidden">
+<h3 style="color: var(--accent); margin-bottom: 10px;">টাকা উত্তোলন (Withdraw)</h3>
+<div class="form-group">
+<label>উত্তোলনের পরিমাণ (সর্বনিম্ন ২০০ থেকে সর্বোচ্চ ২৫,০০০ টাকা)</label>
+<input type="number" id="w-amount" placeholder="টাকার পরিমাণ">
+</div>
+<div class="form-group">
+<label>উত্তোলন পাসওয়ার্ড (Withdraw Password)</label>
+<input type="password" id="w-pass" placeholder="আপনার পিন নাম্বার">
+</div>
+<button class="btn" onclick="submitWithdraw()">উত্তোলনের আবেদন করুন</button>
+<p style="font-size: 12px; color: var(--warning); margin-top: 12px; text-align: center;">⚠️ ১০ মিনিটের মধ্যে আপনার দেওয়া বিকাশ/নগদ নাম্বারে টাকা পৌঁছে যাবে।</p>
+</div>
+
+<div class="nav-tabs" style="margin-top: 20px;">
+<button class="nav-tab active" onclick="showTab('games')">🎮 গেমস্</button>
+<button class="nav-tab" onclick="showTab('deposit')">➕ ডিপোজিট</button>
+<button class="nav-tab" onclick="showTab('withdraw')">➖ উত্তোলন</button>
+<button class="nav-tab" onclick="logout()" style="color: var(--danger);">🚪 লগআউট</button>
+</div>
+</div>
+
+<div id="admin-section" class="content hidden">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+<h2 style="color: var(--accent);">অ্যাডমিন কন্ট্রোল প্যানেল</h2>
+<button class="btn" style="width: auto; padding: 6px 12px; margin: 0; background: var(--danger);" onclick="logout()">লগআউট</button>
+</div>
+
+<div class="stat-card">
+<p style="font-size: 13px; color: var(--text-muted);">মোট ইউজার সংখ্যা</p>
+<h3 id="admin-total-users" style="font-size: 20px; color: var(--success);">0</h3>
+</div>
+<div class="stat-card">
+<p style="font-size: 13px; color: var(--text-muted);">কোম্পানির মোট প্রফিট (Total Admin Profit)</p>
+<h3 id="admin-total-profit" style="font-size: 20px; color: var(--success);">৳ 0.00</h3>
+</div>
+
+<h3 style="margin: 15px 0 10px; font-size: 15px; color: var(--accent);">ইউজার ডাটা রেকর্ড</h3>
+<div style="overflow-x: auto; max-height: 300px;">
+<table class="admin-table">
+<thead>
+<tr>
+<th>Mobile</th>
+<th>Email</th>
+<th>Bkash</th>
+<th>Nagad</th>
+<th>Deposited</th>
+<th>Withdraw</th>
+<th>Profit</th>
+</tr>
+</thead>
+<tbody id="admin-user-table-body"></tbody>
+</table>
+</div>
+
+<div style="margin-top: 20px;">
+<h3 style="font-size: 14px; color: var(--accent); margin-bottom: 8px;">সিস্টেম কনফিগারেশন পরিবর্তন</h3>
+<div class="form-group">
+<label>অ্যাডমিন বিকাশ পারসোনাল নাম্বার</label>
+<input type="text" id="cfg-bkash" value="01700000000">
+</div>
+<div class="form-group">
+<label>অ্যাডমিন নগদ পারসোনাল নাম্বার</label>
+<input type="text" id="cfg-nagad" value="01800000000">
+</div>
+<button class="btn" onclick="saveConfig()">সেটিংস আপডেট করুন</button>
+</div>
+</div>
+</div>
+
+<script>
+let appData = {
+users: JSON.parse(localStorage.getItem('dks_users')) || [],
+currentUserIndex: null,
+totalAdminProfit: parseFloat(localStorage.getItem('dks_total_profit')) || 0,
+adminBkash: "01700000000",
+adminNagad: "01800000000"
+};
+
+function toggleAuth(mode) {
+if(mode === 'signup') {
+document.getElementById('login-form').classList.add('hidden');
+document.getElementById('signup-form').classList.remove('hidden');
+} else {
+document.getElementById('signup-form').classList.add('hidden');
+document.getElementById('login-form').classList.remove('hidden');
+}
+}
+
+function showAlert(msg, isSuccess = false) {
+const alertBox = document.getElementById('msg');
+alertBox.innerText = msg;
+alertBox.className = isSuccess ? "alert success" : "alert";
+alertBox.classList.remove('hidden');
+setTimeout(() => alertBox.classList.add('hidden'), 4000);
+}
+
+function signup() {
+const mobile = document.getElementById('su-mobile').value.trim();
+const email = document.getElementById('su-email').value.trim();
+const pass = document.getElementById('su-pass').value.trim();
+const wpass = document.getElementById('su-w-pass').value.trim();
+const bkash = document.getElementById('su-bkash').value.trim();
+const nagad = document.getElementById('su-nagad').value.trim();
+
+if(!mobile || !email || !pass || !wpass) {
+showAlert("সব তথ্য সঠিকভাবে পূরণ করুন!");
+return;
+}
+
+if(appData.users.some(u => u.signupMobile === mobile || u.signupEmail === email)) {
+showAlert("এই নাম্বার বা জিমেইল দিয়ে ইতিমধ্যে একাউন্ট রয়েছে!");
+return;
+}
+
+const newUser = {
+signupMobile: mobile,
+signupEmail: email,
+loginPassword: pass,
+withdrawPassword: wpass,
+bkashPersonal: bkash,
+nagadPersonal: nagad,
+totalDeposited: 0,
+totalWithdraw: 0,
+adminProfitUser: 0,
+balance: 0
+};
+
+appData.users.push(newUser);
+localStorage.setItem('dks_users', JSON.stringify(appData.users));
+showAlert("সফলভাবে সাইন আপ সম্পন্ন হয়েছে! এখন লগইন করুন।", true);
+toggleAuth('login');
+}
+
+function login() {
+const userInput = document.getElementById('login-user').value.trim();
+const passInput = document.getElementById('login-pass').value.trim();
+
+if(userInput === "sm01407931261@gmail.com" && passInput === "admin123") {
+document.getElementById('auth-section').classList.add('hidden');
+document.getElementById('dashboard-section').classList.add('hidden');
+document.getElementById('admin-section').classList.remove('hidden');
+loadAdminPanel();
+return;
+}
+
+const userIndex = appData.users.findIndex(u => (u.signupMobile === userInput || u.signupEmail === userInput) && u.loginPassword === passInput);
+
+if(userIndex !== -1) {
+appData.currentUserIndex = userIndex;
+document.getElementById('auth-section').classList.add('hidden');
+document.getElementById('dashboard-section').classList.remove('hidden');
+document.getElementById('header-user-badge').innerText = appData.users[userIndex].signupMobile;
+document.getElementById('header-user-badge').classList.remove('hidden');
+updateBalance();
+} else {
+showAlert("ভুল নাম্বার/জিমেইল অথবা পাসওয়ার্ড!");
+}
+}
+
+function logout() {
+appData.currentUserIndex = null;
+document.getElementById('dashboard-section').classList.add('hidden');
+document.getElementById('admin-section').classList.add('hidden');
+document.getElementById('auth-section').classList.remove('hidden');
+document.getElementById('header-user-badge').classList.add('hidden');
+document.getElementById('login-user').value = '';
+document.getElementById('login-pass').value = '';
+}
+
+function showTab(tabName) {
+document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+
+if(tabName === 'games') document.getElementById('tab-games').classList.remove('hidden');
+else if(tabName === 'deposit') document.getElementById('tab-deposit').classList.remove('hidden');
+else if(tabName === 'withdraw') document.getElementById('tab-withdraw').classList.remove('hidden');
+}
+
+function updateBalance() {
+const user = appData.users[appData.currentUserIndex];
+document.getElementById('user-balance').innerText = "৳ " + user.balance.toFixed(2);
+localStorage.setItem('dks_users', JSON.stringify(appData.users));
+}
+
+function updateDepositNumber() {
+const method = document.getElementById('dep-method').value;
+if(method === 'bkash') alert("বিকাশ পারসোনাল নাম্বার: " + appData.adminBkash);
+else alert("নগদ পারসোনাল নাম্বার: " + appData.adminNagad);
+}
+
+function submitDeposit() {
+const amount = parseFloat(document.getElementById('dep-amount').value);
+if(isNaN(amount) || amount < 200) {
+alert("সর্বনিম্ন ২০০ টাকা ডিপোজিট করতে হবে!");
+return;
+}
+
+const user = appData.users[appData.currentUserIndex];
+user.balance += amount;
+user.totalDeposited += amount;
+updateBalance();
+alert("সফলভাবে ডিপোজিট একাউন্টে যোগ হয়েছে!");
+showTab('games');
+}
+
+function submitWithdraw() {
+const amount = parseFloat(document.getElementById('w-amount').value);
+const pass = document.getElementById('w-pass').value.trim();
+
+if(isNaN(amount) || amount < 200 || amount > 25000) {
+alert("একসাথে সর্বনিম্ন ২০০ টাকা থেকে সর্বোচ্চ ২৫,০০০ টাকা উত্তোলন করা যাবে!");
+return;
+}
+
+const user = appData.users[appData.currentUserIndex];
+if(pass !== user.withdrawPassword) {
+alert("ভুল উত্তোলন পাসওয়ার্ড!");
+return;
+}
+
+if(amount > user.balance) {
+alert("পর্যাপ্ত ব্যালেন্স নেই!");
+return;
+}
+
+user.balance -= amount;
+user.totalWithdraw += amount;
+updateBalance();
+alert("উত্তোলনের আবেদন সফল হয়েছে! ১০ মিনিটের মধ্যে টাকা পাঠিয়ে দেওয়া হবে।");
+showTab('games');
+}
+
+function playGame(gameName) {
+let bet = prompt(gameName + " এ কত টাকা বাজি ধরতে চান?");
+bet = parseFloat(bet);
+if(isNaN(bet) || bet <= 0) return;
+
+const user = appData.users[appData.currentUserIndex];
+if(bet > user.balance) {
+alert("পর্যাপ্ত ব্যালেন্স নেই!");
+return;
+}
+
+user.balance -= bet;
+let win = Math.random() >= 0.45;
+
+if(win) {
+let winAmount = bet * 1.85;
+user.balance += winAmount;
+let profit = bet * 0.15;
+user.adminProfitUser += profit;
+appData.totalAdminProfit += profit;
+alert("অভিনন্দন! আপনি জিতেছেন: ৳ " + winAmount.toFixed(2));
+} else {
+let profit = bet;
+user.adminProfitUser += profit;
+appData.totalAdminProfit += profit;
+alert("দুঃখিত, আপনি হেরে গেছেন!");
+}
+
+localStorage.setItem('dks_total_profit', appData.totalAdminProfit);
+updateBalance();
+}
+
+function loadAdminPanel() {
+document.getElementById('admin-total-users').innerText = appData.users.length;
+document.getElementById('admin-total-profit').innerText = "৳ " + appData.totalAdminProfit.toFixed(2);
+
+let tbody = document.getElementById('admin-user-table-body');
+tbody.innerHTML = "";
+
+appData.users.forEach(u => {
+let tr = document.createElement('tr');
+tr.innerHTML = `
+<td>${u.signupMobile}</td>
+<td>${u.signupEmail}</td>
+<td>${u.bkashPersonal}</td>
+<td>${u.nagadPersonal}</td>
+<td>৳${u.totalDeposited}</td>
+<td>৳${u.totalWithdraw}</td>
+<td>৳${u.adminProfitUser.toFixed(2)}</td>
+`;
+tbody.appendChild(tr);
+});
+}
+
+function saveConfig() {
+appData.adminBkash = document.getElementById('cfg-bkash').value.trim();
+appData.adminNagad = document.getElementById('cfg-nagad').value.trim();
+alert("অ্যাডমিন সেটিংস আপডেট করা হয়েছে!");
+}
+</script>
+
+</body>
+</html>
